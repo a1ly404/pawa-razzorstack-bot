@@ -1,0 +1,56 @@
+# Pawa - Discord Voice Recording Bot
+# This compose file is included by the parent razzorstack docker-compose.yml
+# via: include: - path: pawa/docker-compose.pawa.yml
+
+services:
+  pawa:
+    image: registry.gitlab.com/pawabot/pawa:${PAWA_VERSION:-2.17.0}
+    container_name: pawa
+    init: true
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+    environment:
+      - BOT_TOKEN=${PAWA_BOT_TOKEN}
+      - BOT_DATA_DIR=/data
+      - BOT_FILE_FORMAT=${PAWA_FILE_FORMAT:-mp3}
+      - BOT_HTTP_PORT=7888
+      - BOT_RECORDER_TYPE=${PAWA_RECORDER_TYPE:-QUEUE}
+      - BOT_STANDALONE=true
+      - BOT_WEBSITE=https://pawa.razzormail.com
+      - BOT_ACTIVITY=Voice Recording
+      - BOT_MAINTENANCE=false
+      - BOT_MP3_VBR=0
+      - BOT_PREFIX_COMMANDS=true
+      - BOT_LEAVE_GUILD_AFTER=0
+      - DS_BUCKET=/data/datastore
+      - DB_NAME=${PAWA_DB_NAME:-pawa}
+      - DB_HOST=jellystat-db
+      - DB_USER=${JELLYSTAT_POSTGRES_USER:-postgres}
+      - DB_PASSWORD=${JELLYSTAT_POSTGRES_PASSWORD:-jellystat_password}
+      - TZ=${TZ}
+      - OTEL_JAVAAGENT_ENABLED=false
+      - JAVA_TOOL_OPTIONS=-Dlog4j.configurationFile=log4j2-prod.xml
+                          --add-opens=java.base/java.lang=ALL-UNNAMED
+                          -XX:MinRAMPercentage=${PAWA_JVM_MIN_RAM:-25}
+                          -XX:MaxRAMPercentage=${PAWA_JVM_MAX_RAM:-75}
+                          -XX:+CrashOnOutOfMemoryError
+    volumes:
+      - /home/daffy/pawa-recordings:/data
+      - pawa_logs:/app/logs
+    networks:
+      - media_network
+    depends_on:
+      jellystat-db:
+        condition: service_healthy
+
+volumes:
+  pawa_logs:
+
+networks:
+  media_network:
+    external: true
+    name: razzorstack_media_network

@@ -1,0 +1,27 @@
+# Pawa - Discord voice recording file browser
+# Import this in the main Caddyfile with:
+#   import /etc/caddy/pawa/pawa.caddyfile
+
+pawa.razzormail.com {
+	encode gzip
+
+	basic_auth {
+		razzor $2a$14$lw.KGUQfMcTie8loIGkzC.wsQxOF/jAgezbm0/ZVCVblhrb4qsf.6
+	}
+
+	root * /srv/pawa-recordings
+	file_server browse
+
+	header {
+		Content-Security-Policy "default-src 'self' 'unsafe-inline'"
+		X-Content-Type-Options nosniff
+	}
+
+	handle_errors {
+		respond "Service temporarily unavailable" 503
+	}
+}
+
+http://pawa.razzormail.com {
+	redir https://pawa.razzormail.com{uri} permanent
+}
