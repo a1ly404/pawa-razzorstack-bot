@@ -13,7 +13,7 @@ Slash commands (`/record`, `/save`, `/stop`, `/recover`) are registered and func
 
 - [x] Docker service configured (`docker-compose.pawa.yml`)
 - [x] Fixed OTEL agent crash (`OTEL_JAVAAGENT_ENABLED=false` + `--add-opens`)
-- [x] Fixed `DS_BUCKET` storage path — recordings persist to `/home/daffy/pawa-recordings/datastore/`
+- [x] Fixed `DS_BUCKET` storage path — recordings persist to `$PAWA_RECORDINGS_PATH/datastore/`
 - [x] Enabled MESSAGE CONTENT INTENT in Discord Developer Portal
 - [x] Bot connects to Discord Gateway — "Connected to 1 guilds!"
 - [x] Slash commands registered (record, stop, save, recover, autorecord, autostop, etc.)
@@ -49,7 +49,7 @@ https://discord.com/oauth2/authorize?client_id=1483327849124335646&scope=applica
 
 ### 3. Browse Recordings
 - URL: `https://pawa.razzormail.com`
-- Login: `razzor` / `PawaRec2026!`
+- Login: credentials set via `PAWA_BASIC_AUTH_USER` / `PAWA_BASIC_AUTH_HASH` in `docker/.env`
 
 ### 4. Set Up Retention Cleanup (Optional)
 ```bash
@@ -68,10 +68,10 @@ python3 scripts/pawa_retention_cleanup.py --dry-run
 |---------|-------|----------|
 | Docker image | `registry.gitlab.com/pawabot/pawa:2.17.0-be7c1c2b` | `docker/.env` |
 | Bot token | `PAWA_BOT_TOKEN` | `docker/.env` |
-| Recordings (host) | `/home/daffy/pawa-recordings/datastore/` | Volume mount |
+| Recordings (host) | `$PAWA_RECORDINGS_PATH/datastore/` | Volume mount |
 | Recordings (container) | `/data/datastore/` | `DS_BUCKET` env var |
 | Recording file browser | `https://pawa.razzormail.com` | Caddy file_server |
-| Browser login | `razzor` / `PawaRec2026!` | Caddy config |
+| Browser login | Set via `PAWA_BASIC_AUTH_USER` / `PAWA_BASIC_AUTH_HASH` | `docker/.env` |
 | Database | H2 embedded at `/data/embedded-database/` | Auto-managed |
 | Recorder type | QUEUE | `BOT_RECORDER_TYPE` |
 | File format | mp3 | `BOT_FILE_FORMAT` |
@@ -84,6 +84,6 @@ python3 scripts/pawa_retention_cleanup.py --dry-run
 
 **"Application did not respond"**: Check `docker compose logs pawa --tail 50` for exceptions.
 
-**Recordings not persisting**: Verify `DS_BUCKET=/data/datastore` in compose and that `/home/daffy/pawa-recordings/datastore/` has files after recording.
+**Recordings not persisting**: Verify `DS_BUCKET=/data/datastore` in compose and that `$PAWA_RECORDINGS_PATH/datastore/` has files after recording.
 
 **Bot leaves server automatically**: Set `BOT_LEAVE_GUILD_AFTER=0` in compose environment.

@@ -1,12 +1,16 @@
 # Pawa - Discord voice recording file browser
 # Import this in the main Caddyfile with:
 #   import /etc/caddy/pawa/pawa.caddyfile
+#
+# Required env vars (set in docker/.env):
+#   PAWA_BASIC_AUTH_USER  - basic auth username
+#   PAWA_BASIC_AUTH_HASH  - bcrypt hash of password (generate with: caddy hash-password)
 
 pawa.razzormail.com {
 	encode gzip
 
 	basic_auth {
-		razzor $2a$14$lw.KGUQfMcTie8loIGkzC.wsQxOF/jAgezbm0/ZVCVblhrb4qsf.6
+		{$PAWA_BASIC_AUTH_USER} {$PAWA_BASIC_AUTH_HASH}
 	}
 
 	root * /srv/pawa-recordings

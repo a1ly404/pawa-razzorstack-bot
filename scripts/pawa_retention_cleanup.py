@@ -13,7 +13,7 @@ import os
 import sys
 from pathlib import Path
 
-RECORDINGS_DIR = Path("/home/daffy/pawa-recordings")
+RECORDINGS_DIR = Path(os.environ.get("PAWA_RECORDINGS_PATH", "/home/daffy/pawa-recordings"))
 DEFAULT_LIMIT_GB = 250
 AUDIO_EXTENSIONS = {".wav", ".mp3", ".ogg", ".flac", ".pcm"}
 

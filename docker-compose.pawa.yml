@@ -39,7 +39,7 @@ services:
                           -XX:MaxRAMPercentage=${PAWA_JVM_MAX_RAM:-75}
                           -XX:+CrashOnOutOfMemoryError
     volumes:
-      - /home/daffy/pawa-recordings:/data
+      - ${PAWA_RECORDINGS_PATH:-/home/daffy/pawa-recordings}:/data
       - pawa_logs:/app/logs
     networks:
       - media_network
