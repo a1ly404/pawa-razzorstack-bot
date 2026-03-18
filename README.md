@@ -27,6 +27,33 @@ Once the bot is in your server, these slash commands are available:
 
 Prefix commands (`!record`, `!save`, `!stop`, etc.) are also enabled.
 
+## Recording a Meeting
+
+Join a voice channel and use one of these workflows:
+
+**Hands-free (recommended)** — autosave is on by default, so recordings save automatically:
+
+1. Join a voice channel
+2. Type `/record` in any text channel — bot joins and starts recording
+3. When done, type `/stop` — bot saves the MP3, posts it to the text channel, and leaves
+
+**Split a long session** — save checkpoints without stopping:
+
+1. `/record` to start
+2. Mid-meeting, `/save` to save what's been recorded so far (bot keeps recording)
+3. `/save` again later for another segment
+4. `/stop` when finished
+
+**Fully automatic** — record every call with no commands:
+
+1. `/autorecord` in a text channel — bot will automatically join and record whenever someone enters the voice channel
+2. `/autostop` — bot leaves when the channel empties
+3. Autosave handles the rest — MP3 posted to the text channel automatically
+
+**Retrieve recordings later:**
+- Recordings are posted as MP3 attachments in the text channel
+- Also browseable at `https://pawa.razzormail.com` (password-protected)
+
 ## Default Options
 
 These are the defaults configured in `docker-compose.pawa.yml`:
