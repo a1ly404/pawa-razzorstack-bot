@@ -184,4 +184,8 @@ See [docs/SETUP.md](docs/SETUP.md) for the full setup guide, troubleshooting, an
 
 ## License
 
-This deployment configuration is provided as-is. Pawa itself is licensed under the [Apache License 2.0](https://gitlab.com/pawabot/pawa/-/blob/master/LICENSE).
+This deployment configuration is licensed under the [Apache License 2.0](LICENSE), consistent with the upstream [Pawa project](https://gitlab.com/pawabot/pawa/-/blob/master/LICENSE).
+
+## Security
+
+All credentials (bot tokens, database passwords, basic auth hashes) are stored in `docker/.env` which is **not tracked by git**. The `.env.example` contains only placeholder values. Never commit real secrets.

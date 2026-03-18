@@ -30,7 +30,7 @@ services:
       - DB_NAME=${PAWA_DB_NAME:-pawa}
       - DB_HOST=jellystat-db
       - DB_USER=${JELLYSTAT_POSTGRES_USER:-postgres}
-      - DB_PASSWORD=${JELLYSTAT_POSTGRES_PASSWORD:-jellystat_password}
+      - DB_PASSWORD=${JELLYSTAT_POSTGRES_PASSWORD}
       - TZ=${TZ}
       - OTEL_JAVAAGENT_ENABLED=false
       - JAVA_TOOL_OPTIONS=-Dlog4j.configurationFile=log4j2-prod.xml
