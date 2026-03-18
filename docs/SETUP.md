@@ -44,8 +44,9 @@ The bot shows "CANNOT WRITE" and renames itself because it lacks permissions in 
 
 ### 2. Invite Bot to Target Server (for meetings)
 ```
-https://discord.com/oauth2/authorize?client_id=1483327849124335646&scope=applications.commands+bot&permissions=2251328512
+https://discord.com/oauth2/authorize?client_id=1483327849124335646&permissions=2251344896&scope=bot+applications.commands
 ```
+See [README.md](../README.md#discord-developer-portal-setup) for the full permissions breakdown and Developer Portal settings.
 
 ### 3. Browse Recordings
 - URL: `https://pawa.razzormail.com`

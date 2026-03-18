@@ -54,6 +54,69 @@ These are the defaults configured in `docker-compose.pawa.yml`:
 | `caddy/pawa.caddyfile` | [Caddy](https://caddyserver.com/) config for the recording file browser with basic auth |
 | `docs/SETUP.md` | Full setup guide and troubleshooting |
 
+## Discord Developer Portal Setup
+
+### 1. Bot Settings
+
+In [discord.com/developers/applications](https://discord.com/developers/applications) → your Pawa app → **Bot**:
+
+| Setting | Value | Why |
+|---------|-------|-----|
+| **Public Bot** | ❌ Unchecked | Private — only you can invite it |
+| **Message Content Intent** | ✅ Enabled | Required for `!record` / `!save` prefix commands |
+| **Server Members Intent** | ❌ Not needed | |
+| **Presence Intent** | ❌ Not needed | |
+
+### 2. Installation Settings
+
+Go to **Installation** (left sidebar):
+
+| Setting | Value |
+|---------|-------|
+| **Authorization Method** | None |
+
+> Setting this to "None" is required when Public Bot is unchecked. Use the custom invite URL below instead.
+
+### 3. Bot Permissions
+
+The bot needs these Discord permissions to function:
+
+| Permission | Integer | Required For |
+|------------|---------|-------------|
+| View Channel | `1024` | See text and voice channels |
+| Send Messages | `2048` | Post recording notifications and MP3 files |
+| Embed Links | `16384` | Recording info embeds (`/info`, recording details) |
+| Attach Files | `32768` | Upload MP3 recordings to the text channel |
+| Connect | `1048576` | Join voice channels to record |
+| Speak | `2097152` | Required by Discord for voice channel interaction |
+| Use Voice Activity | `33554432` | Receive audio from voice channel participants |
+| Change Nickname | `67108864` | Set `[REC]` prefix while actively recording |
+
+**Total permission integer:** `2251344896`
+
+### 4. Invite URL (Private Bot)
+
+Since Public Bot is unchecked, use this URL to add the bot to your server:
+
+```
+https://discord.com/oauth2/authorize?client_id=1483327849124335646&permissions=2251344896&scope=bot+applications.commands
+```
+
+### 5. Channel Permissions
+
+After inviting, ensure the bot role has these permissions in any channel it will use:
+
+- ✅ View Channel
+- ✅ Send Messages
+- ✅ Attach Files
+- ✅ Embed Links
+- ✅ Change Nickname
+- ✅ Connect (voice channels)
+- ✅ Speak (voice channels)
+- ✅ Use Voice Activity (voice channels)
+
+> If the bot shows "CANNOT WRITE" as its nickname, it's missing Send Messages or Change Nickname in that channel.
+
 ## Quick Start
 
 This repo is consumed as a git submodule by razzorstack:
