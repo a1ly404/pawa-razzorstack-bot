@@ -60,8 +60,8 @@ These are the defaults configured in `docker-compose.pawa.yml`:
 
 | Setting | Value | Description |
 |---------|-------|-------------|
-| `BOT_FILE_FORMAT` | `mp3` | Output format for recordings |
-| `BOT_RECORDER_TYPE` | `QUEUE` | BlockingQueue recorder — more stable than LEGACY (no deadlocks) |
+| `BOT_FILE_FORMAT` | `mp3` | Output format for recordings (Pawa always encodes MP3) |
+| `BOT_RECORDER_TYPE` | `LEGACY` | CombinedAudioRecorder — required for proper MP3 output with WAV format setting |
 | `BOT_MP3_VBR` | `0` | Constant bitrate (CBR) for consistent quality |
 | `BOT_STANDALONE` | `true` | Self-hosted mode (no cloud features) |
 | `BOT_PREFIX_COMMANDS` | `true` | Enable `!record` / `!save` / `!stop` prefix commands |
