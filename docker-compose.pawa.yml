@@ -16,9 +16,9 @@ services:
     environment:
       - BOT_TOKEN=${PAWA_BOT_TOKEN}
       - BOT_DATA_DIR=/data
-      - BOT_FILE_FORMAT=${PAWA_FILE_FORMAT:-wav}
+      - BOT_FILE_FORMAT=${PAWA_FILE_FORMAT:-mp3}
       - BOT_HTTP_PORT=7888
-      - BOT_RECORDER_TYPE=${PAWA_RECORDER_TYPE:-QUEUE}
+      - BOT_RECORDER_TYPE=${PAWA_RECORDER_TYPE:-LEGACY}
       - BOT_STANDALONE=true
       - BOT_WEBSITE=https://pawa.razzormail.com
       - BOT_ACTIVITY=Voice Recording

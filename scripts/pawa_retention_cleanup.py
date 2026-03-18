@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Pawa recording retention cleanup.
 
-Deletes oldest WAV/MP3 recordings when total usage in the recordings
+Deletes oldest MP3 recordings when total usage in the recordings
 directory exceeds a configurable threshold (default 250 GB).
 
 Usage:
