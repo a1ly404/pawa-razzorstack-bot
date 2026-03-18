@@ -20,10 +20,6 @@ pawa.razzormail.com {
 		Content-Security-Policy "default-src 'self' 'unsafe-inline'"
 		X-Content-Type-Options nosniff
 	}
-
-	handle_errors {
-		respond "Service temporarily unavailable" 503
-	}
 }
 
 http://pawa.razzormail.com {
