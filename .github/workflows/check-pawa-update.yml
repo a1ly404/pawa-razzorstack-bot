@@ -1,0 +1,89 @@
+name: Check for Pawa Updates
+
+on:
+  schedule:
+    # Weekly Monday 00:00 UTC (10am AEST)
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Check for new Pawa version
+        id: check
+        run: |
+          # Current version from docker-compose default
+          CURRENT=$(grep -oP 'PAWA_VERSION:-\K[0-9]+\.[0-9]+\.[0-9]+' docker-compose.pawa.yml)
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+
+          # Fetch all tags from GitLab container registry
+          ALL_TAGS=$(crane ls registry.gitlab.com/pawabot/pawa 2>/dev/null || true)
+
+          if [ -z "$ALL_TAGS" ]; then
+            echo "::warning::Could not fetch tags from registry"
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Find latest semver tag (pure X.Y.Z)
+          LATEST=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+
+          # Fallback: extract version prefix from suffixed tags (e.g. 2.17.0-be7c1c2b)
+          if [ -z "$LATEST" ]; then
+            LATEST=$(echo "$ALL_TAGS" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' | sort -V -u | tail -1)
+          fi
+
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Current: $CURRENT → Latest: $LATEST"
+
+          if [ -z "$LATEST" ] || [ "$CURRENT" = "$LATEST" ]; then
+            echo "Already up to date"
+            echo "update=false" >> "$GITHUB_OUTPUT"
+          else
+            # Verify latest is actually newer (not a downgrade)
+            HIGHEST=$(printf '%s\n%s' "$CURRENT" "$LATEST" | sort -V | tail -1)
+            if [ "$HIGHEST" = "$LATEST" ] && [ "$CURRENT" != "$LATEST" ]; then
+              echo "Update available: $CURRENT → $LATEST"
+              echo "update=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Current version is already newest"
+              echo "update=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Update version in docker-compose
+        if: steps.check.outputs.update == 'true'
+        run: |
+          sed -i "s/PAWA_VERSION:-${{ steps.check.outputs.current }}/PAWA_VERSION:-${{ steps.check.outputs.latest }}/" docker-compose.pawa.yml
+          echo "Updated docker-compose.pawa.yml:"
+          grep "PAWA_VERSION" docker-compose.pawa.yml
+
+      - name: Create Pull Request
+        if: steps.check.outputs.update == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: "chore: update Pawa to v${{ steps.check.outputs.latest }}"
+          title: "Update Pawa to v${{ steps.check.outputs.latest }}"
+          body: |
+            Automated update: Pawa `${{ steps.check.outputs.current }}` → `${{ steps.check.outputs.latest }}`
+
+            **Image:** `registry.gitlab.com/pawabot/pawa:${{ steps.check.outputs.latest }}`
+
+            ## Deploy after merging
+
+            ```bash
+            cd /home/daffy/Tools/razzorstack/docker/pawa
+            ./scripts/deploy-pawa.sh
+            ```
+          branch: pawa-update/v${{ steps.check.outputs.latest }}
+          labels: dependencies
