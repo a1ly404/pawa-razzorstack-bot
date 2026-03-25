@@ -23,7 +23,7 @@ jobs:
         id: check
         run: |
           # Current version from docker-compose default
-          CURRENT=$(grep -oP 'PAWA_VERSION:-\K[0-9]+\.[0-9]+\.[0-9]+' docker-compose.pawa.yml)
+          CURRENT=$(grep -oP 'PAWA_VERSION:-\\K[0-9]+\\.[0-9]+\\.[0-9]+' docker-compose.pawa.yml)
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
 
           # Fetch all tags from GitLab container registry
@@ -36,11 +36,11 @@ jobs:
           fi
 
           # Find latest semver tag (pure X.Y.Z)
-          LATEST=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          LATEST=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -1)
 
           # Fallback: extract version prefix from suffixed tags (e.g. 2.17.0-be7c1c2b)
           if [ -z "$LATEST" ]; then
-            LATEST=$(echo "$ALL_TAGS" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' | sort -V -u | tail -1)
+            LATEST=$(echo "$ALL_TAGS" | grep -oE '^[0-9]+\\.[0-9]+\\.[0-9]+' | sort -V -u | tail -1)
           fi
 
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
@@ -51,7 +51,7 @@ jobs:
             echo "update=false" >> "$GITHUB_OUTPUT"
           else
             # Verify latest is actually newer (not a downgrade)
-            HIGHEST=$(printf '%s\n%s' "$CURRENT" "$LATEST" | sort -V | tail -1)
+            HIGHEST=$(printf '%s\\n%s' "$CURRENT" "$LATEST" | sort -V | tail -1)
             if [ "$HIGHEST" = "$LATEST" ] && [ "$CURRENT" != "$LATEST" ]; then
               echo "Update available: $CURRENT → $LATEST"
               echo "update=true" >> "$GITHUB_OUTPUT"
@@ -68,14 +68,21 @@ jobs:
           echo "Updated docker-compose.pawa.yml:"
           grep "PAWA_VERSION" docker-compose.pawa.yml
 
-      - name: Commit and push to main
+      - name: Create Pull Request
+        id: create-pr
         if: steps.check.outputs.update == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docker-compose.pawa.yml
-          git commit -m "chore: update Pawa to v${{ steps.check.outputs.latest }}"
-          git push origin main
+        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e155 # v7.0.5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update Pawa to v${{ steps.check.outputs.latest }}'
+          title: 'chore: update Pawa to v${{ steps.check.outputs.latest }}'
+          body: |
+            ## Pawa Version Update
+
+            This PR updates Pawa to the latest version.
+
+            **Changes:**
+            - Updated `PAWA_VERSION` from `${{ steps.check.outputs.current }}` to `${{ steps.check.outputs.latest }}`
 
             ## Deploy after merging
 
@@ -84,4 +91,12 @@ jobs:
             ./scripts/deploy-pawa.sh
             ```
           branch: pawa-update/v${{ steps.check.outputs.latest }}
+          delete-branch: true
           labels: dependencies
+
+      - name: Enable Pull Request Auto-merge
+        if: steps.check.outputs.update == 'true' && steps.create-pr.outputs.pull-request-number != ''
+        uses: peter-evans/enable-pull-request-automerge@a660677d5462eb03ebd7bf7a72456a09876ca19b # v3.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
