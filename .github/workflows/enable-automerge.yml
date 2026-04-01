@@ -10,9 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Enable Pull Request Automerge
-        run: gh pr merge --merge --auto "$PR_NUMBER"
         env:
           GH_TOKEN: ${{ secrets.PAT }}
-        shell: bash
-        env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh pr merge --merge --auto "$PR_NUMBER"
+        shell: bash
