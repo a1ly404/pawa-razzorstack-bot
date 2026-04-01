@@ -1,0 +1,53 @@
+name: Dependabot Auto-Merge with Compatibility Check
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-and-merge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Extract compatibility score
+        id: compatibility
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          # Extract the compatibility score from Dependabot's PR description
+          COMPATIBILITY=$(echo "$PR_BODY" | grep -oP 'Dependabot compatibility score[^\d]*\K\d+' || echo "0")
+          echo "score=$COMPATIBILITY" >> $GITHUB_OUTPUT
+          echo "Compatibility score: $COMPATIBILITY"
+      
+      - name: Check if auto-merge should be enabled
+        id: check
+        run: |
+          SCORE=${{ steps.compatibility.outputs.score }}
+          if [ "$SCORE" -ge 75 ]; then
+            echo "should_merge=true" >> $GITHUB_OUTPUT
+            echo "✅ Compatibility score ($SCORE%) meets 75% threshold"
+          else
+            echo "should_merge=false" >> $GITHUB_OUTPUT
+            echo "❌ Compatibility score ($SCORE%) below 75% threshold"
+          fi
+      
+      - name: Enable auto-merge
+        if: steps.check.outputs.should_merge == 'true'
+        run: |
+          gh pr merge --merge --auto "$PR_NUMBER"
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+      
+      - name: Comment on low compatibility score
+        if: steps.check.outputs.should_merge == 'false'
+        run: |
+          gh pr comment "$PR_NUMBER" --body "⚠️ This PR has a compatibility score of ${{ steps.compatibility.outputs.score }}%, which is below the 75% threshold for auto-merging. Please review manually before merging."
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}

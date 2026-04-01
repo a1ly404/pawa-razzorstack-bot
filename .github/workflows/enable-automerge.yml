@@ -1,0 +1,18 @@
+name: Enable Automerge for Dependabot
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+jobs:
+  enable-automerge:
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      contains(github.event.pull_request.labels.*.name, 'dependencies')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enable Pull Request Automerge
+        run: gh pr merge --merge --auto "$PR_NUMBER"
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
