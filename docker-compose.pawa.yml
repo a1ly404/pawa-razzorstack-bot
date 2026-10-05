@@ -1,6 +1,12 @@
 # Pawa - Discord Voice Recording Bot
 # This compose file is included by the parent razzorstack docker-compose.yml
 # via: include: - path: pawa/docker-compose.pawa.yml
+#
+# pawa-db: postgres:15.2 instance repurposed from the retired jellystat-db
+# container (runtime rename jellystat-db -> pawa-db, 2026-10-04). Env var
+# names keep the historical JELLYSTAT_POSTGRES_* interpolation names; the
+# runtime .env carries the values. Never `source` that .env — the password
+# contains `$`.
 
 services:
   pawa:
@@ -28,7 +34,7 @@ services:
       - BOT_LEAVE_GUILD_AFTER=0
       - DS_BUCKET=/data/datastore
       - DB_NAME=${PAWA_DB_NAME:-pawa}
-      - DB_HOST=jellystat-db
+      - DB_HOST=pawa-db
       - DB_USER=${JELLYSTAT_POSTGRES_USER:-postgres}
       - DB_PASSWORD=${JELLYSTAT_POSTGRES_PASSWORD}
       - TZ=${TZ}
@@ -43,16 +49,58 @@ services:
       - pawa_logs:/app/logs
     networks:
       - media_network
+      - backend_network # reaches pawa-db on the internal DB network
     logging:
       driver: json-file
       options:
         max-size: "10m"
         max-file: "3"
+    depends_on:
+      pawa-db:
+        condition: service_healthy
+
+  pawa-db:
+    image: postgres:15.2
+    container_name: pawa-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${JELLYSTAT_POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${JELLYSTAT_POSTGRES_PASSWORD:-jellystat_password}
+      - POSTGRES_DB=${JELLYSTAT_POSTGRES_DB:-jfstat}
+      - TZ=${TZ}
+    volumes:
+      - jellystat_db:/var/lib/postgresql/data
+      - ./postgres-initdb:/docker-entrypoint-initdb.d:ro
+    networks:
+      - backend_network # databases only on internal network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${JELLYSTAT_POSTGRES_USER:-postgres} -d ${JELLYSTAT_POSTGRES_DB:-jfstat}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
 volumes:
   pawa_logs:
+  jellystat_db: # same named volume the retired jellystat-db used (razzorstack_jellystat_db)
 
 networks:
   media_network:
     external: true
     name: razzorstack_media_network
+  backend_network:
+    external: true
+    name: razzorstack_backend_network
