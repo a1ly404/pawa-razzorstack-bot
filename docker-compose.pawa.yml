@@ -43,9 +43,11 @@ services:
       - pawa_logs:/app/logs
     networks:
       - media_network
-    depends_on:
-      jellystat-db:
-        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pawa_logs:
