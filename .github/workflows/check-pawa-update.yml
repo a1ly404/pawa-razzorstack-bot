@@ -71,7 +71,7 @@ jobs:
       - name: Create Pull Request
         id: create-pr
         if: steps.check.outputs.update == 'true'
-        uses: peter-evans/create-pull-request@5e914681df9dc83aa4e4905692ca88beb2f9e155 # v7.0.5
+        uses: peter-evans/create-pull-request@v7 # v7.0.5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'chore: update Pawa to v${{ steps.check.outputs.latest }}'
@@ -96,7 +96,7 @@ jobs:
 
       - name: Enable Pull Request Auto-merge
         if: steps.check.outputs.update == 'true' && steps.create-pr.outputs.pull-request-number != ''
-        uses: peter-evans/enable-pull-request-automerge@a660677d5462eb03ebd7bf7a72456a09876ca19b # v3.0.0
+        uses: peter-evans/enable-pull-request-automerge@v2 # v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
