@@ -23,7 +23,7 @@ jobs:
         id: check
         run: |
           # Current version from docker-compose default
-          CURRENT=$(grep -oP 'PAWA_VERSION:-\\K[0-9]+\\.[0-9]+\\.[0-9]+' docker-compose.pawa.yml)
+          CURRENT=$(grep -oP 'PAWA_VERSION:-\K[0-9]+\.[0-9]+\.[0-9]+' docker-compose.pawa.yml)
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
 
           # Fetch all tags from GitLab container registry
@@ -36,11 +36,11 @@ jobs:
           fi
 
           # Find latest semver tag (pure X.Y.Z)
-          LATEST=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -1)
+          LATEST=$(echo "$ALL_TAGS" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
 
           # Fallback: extract version prefix from suffixed tags (e.g. 2.17.0-be7c1c2b)
           if [ -z "$LATEST" ]; then
-            LATEST=$(echo "$ALL_TAGS" | grep -oE '^[0-9]+\\.[0-9]+\\.[0-9]+' | sort -V -u | tail -1)
+            LATEST=$(echo "$ALL_TAGS" | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+' | sort -V -u | tail -1)
           fi
 
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
@@ -51,7 +51,7 @@ jobs:
             echo "update=false" >> "$GITHUB_OUTPUT"
           else
             # Verify latest is actually newer (not a downgrade)
-            HIGHEST=$(printf '%s\\n%s' "$CURRENT" "$LATEST" | sort -V | tail -1)
+            HIGHEST=$(printf '%s\n%s' "$CURRENT" "$LATEST" | sort -V | tail -1)
             if [ "$HIGHEST" = "$LATEST" ] && [ "$CURRENT" != "$LATEST" ]; then
               echo "Update available: $CURRENT → $LATEST"
               echo "update=true" >> "$GITHUB_OUTPUT"
