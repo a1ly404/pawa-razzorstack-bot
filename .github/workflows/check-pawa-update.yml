@@ -96,7 +96,7 @@ jobs:
 
       - name: Enable Pull Request Auto-merge
         if: steps.check.outputs.update == 'true' && steps.create-pr.outputs.pull-request-number != ''
-        uses: peter-evans/enable-pull-request-automerge@v2 # v3.0.0
+        uses: peter-evans/enable-pull-request-automerge@v3 # v3.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           pull-request-number: ${{ steps.create-pr.outputs.pull-request-number }}
